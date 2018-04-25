@@ -10,7 +10,7 @@ type Article struct {
 	Source      string
 	Author      string
 	Title       string
-	Description string `gorm:type:LONGTEXT`
+	Description string `gorm:"type:longtext"`
 	URL         string
 	URLToImage  string
 	PublishedAt string
