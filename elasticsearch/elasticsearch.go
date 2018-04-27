@@ -42,3 +42,38 @@ func (h *Handler) Save(articles []newsapi.Article, name string) error {
 	}
 	return nil
 }
+
+func (h *Handler) GetAll(from, size int, name string) (error, *elastic.SearchResult) {
+	termQuery := elastic.NewMatchAllQuery()
+	searchResult, err := h.Client.Search().
+		Index(name).             // search in index "tweets"
+		Query(termQuery).        // specify the query
+		From(from).Size(size).   // take documents 0-9
+		Pretty(true).            // pretty print request and response JSON
+		Do(context.Background()) // execute
+	fmt.Println(searchResult)
+	return err, searchResult
+}
+
+func (h *Handler) Get(id string) (error, *elastic.SearchResult) {
+	termQuery := elastic.NewTermQuery("id", id)
+	searchResult, err := h.Client.Search().
+		Index("tweets").         // search in index "tweets"
+		Query(termQuery).        // specify the query
+		Pretty(true).            // pretty print request and response JSON
+		Do(context.Background()) // execute
+	return err, searchResult
+}
+
+func (h *Handler) Post(article newsapi.Article, name string) error {
+	id := elastic.NewMaxAggregation().Field("id")
+	_, err := h.Client.Index().
+		Index(name).
+		Type("doc").
+		// Id(fmt.Sprintf("%d", id+1)).
+		BodyJson(article).
+		Refresh("wait_for").
+		Do(context.Background())
+	fmt.Println(id)
+	return err
+}
