@@ -35,8 +35,4 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	err = esHandler.Save(result.Articles, "articles")
-	if err != nil {
-		panic(err)
-	}
 }

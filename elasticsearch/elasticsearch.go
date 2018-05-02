@@ -27,12 +27,42 @@ func (h *Handler) Create(name string) error {
 	return err
 }
 
-func (h *Handler) Save(articles []newsapi.Article, name string) error {
-	for id, article := range articles {
+func (h *Handler) GetAll(from, size int, name string) (*elastic.SearchResult, error) {
+	termQuery := elastic.NewMatchAllQuery()
+	searchResult, err := h.Client.Search().
+		Index(name).
+		Query(termQuery).
+		From(from).Size(size).
+		Pretty(true).
+		Do(context.Background())
+	fmt.Println(searchResult)
+	return searchResult, err
+}
+
+func (h *Handler) Get(id string) (*elastic.SearchResult, error) {
+	termQuery := elastic.NewTermQuery("id", id)
+	searchResult, err := h.Client.Search().
+		Index("tweets").
+		Query(termQuery).
+		Pretty(true).
+		Do(context.Background())
+	return searchResult, err
+}
+
+func (h *Handler) Post(articles []newsapi.Article, name string) error {
+	idIF, err := elastic.NewMaxAggregation().Field("id").Source()
+	if err != nil {
+		return err
+	}
+	id := idIF.(int)
+	if idIF == nil {
+		id = 0
+	}
+	for _, article := range articles {
 		_, err := h.Client.Index().
 			Index(name).
 			Type("doc").
-			Id(fmt.Sprintf("%d", id+1)).
+			Id(fmt.Sprintf("%d", id + 1)).
 			BodyJson(article).
 			Refresh("wait_for").
 			Do(context.Background())
@@ -41,39 +71,4 @@ func (h *Handler) Save(articles []newsapi.Article, name string) error {
 		}
 	}
 	return nil
-}
-
-func (h *Handler) GetAll(from, size int, name string) (error, *elastic.SearchResult) {
-	termQuery := elastic.NewMatchAllQuery()
-	searchResult, err := h.Client.Search().
-		Index(name).             // search in index "tweets"
-		Query(termQuery).        // specify the query
-		From(from).Size(size).   // take documents 0-9
-		Pretty(true).            // pretty print request and response JSON
-		Do(context.Background()) // execute
-	fmt.Println(searchResult)
-	return err, searchResult
-}
-
-func (h *Handler) Get(id string) (error, *elastic.SearchResult) {
-	termQuery := elastic.NewTermQuery("id", id)
-	searchResult, err := h.Client.Search().
-		Index("tweets").         // search in index "tweets"
-		Query(termQuery).        // specify the query
-		Pretty(true).            // pretty print request and response JSON
-		Do(context.Background()) // execute
-	return err, searchResult
-}
-
-func (h *Handler) Post(article newsapi.Article, name string) error {
-	id := elastic.NewMaxAggregation().Field("id")
-	_, err := h.Client.Index().
-		Index(name).
-		Type("doc").
-		// Id(fmt.Sprintf("%d", id+1)).
-		BodyJson(article).
-		Refresh("wait_for").
-		Do(context.Background())
-	fmt.Println(id)
-	return err
 }
