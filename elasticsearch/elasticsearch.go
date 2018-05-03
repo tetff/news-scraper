@@ -11,26 +11,28 @@ import (
 
 type Handler struct {
 	conn   string
+	name string
 	Client *elastic.Client
 }
 
-func New(conn string) (Handler, error) {
+func New(conn, name string) (Handler, error) {
 	var handler Handler
 	var err error
 	handler.conn = conn
+	handler.name = name
 	handler.Client, err = elastic.NewClient()
 	return handler, err
 }
 
-func (h *Handler) Create(name string) error {
-	_, err := h.Client.CreateIndex(name).Do(context.Background())
+func (h *Handler) Create() error {
+	_, err := h.Client.CreateIndex(h.name).Do(context.Background())
 	return err
 }
 
-func (h *Handler) GetAll(from, size int, name string) (*elastic.SearchResult, error) {
+func (h *Handler) GetAll(from, size int) (*elastic.SearchResult, error) {
 	termQuery := elastic.NewMatchAllQuery()
 	searchResult, err := h.Client.Search().
-		Index(name).
+		Index(h.name).
 		Query(termQuery).
 		From(from).Size(size).
 		Pretty(true).
@@ -42,14 +44,14 @@ func (h *Handler) GetAll(from, size int, name string) (*elastic.SearchResult, er
 func (h *Handler) Get(id string) (*elastic.SearchResult, error) {
 	termQuery := elastic.NewTermQuery("id", id)
 	searchResult, err := h.Client.Search().
-		Index("tweets").
+		Index(h.name).
 		Query(termQuery).
 		Pretty(true).
 		Do(context.Background())
 	return searchResult, err
 }
 
-func (h *Handler) Post(articles []newsapi.Article, name string) error {
+func (h *Handler) Post(articles []newsapi.Article) error {
 	idIF, err := elastic.NewMaxAggregation().Field("id").Source()
 	if err != nil {
 		return err
@@ -60,7 +62,7 @@ func (h *Handler) Post(articles []newsapi.Article, name string) error {
 	}
 	for _, article := range articles {
 		_, err := h.Client.Index().
-			Index(name).
+			Index(h.name).
 			Type("doc").
 			Id(fmt.Sprintf("%d", id + 1)).
 			BodyJson(article).

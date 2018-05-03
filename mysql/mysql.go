@@ -23,7 +23,7 @@ func (h *Handler) Migrate() {
 
 func (h *Handler) Save(articles []newsapi.Article) {
 	for _, article := range articles {
-		a := translater(article)
+		a := translator(article)
 		h.DB.Create(&a)
 	}
 }

@@ -1,12 +1,17 @@
 package utils
 
 import (
-	"github.com/tothmate90/news-scraper/newsapi"
+	"reflect"
+
 	"github.com/olivere/elastic"
+	"github.com/tothmate90/news-scraper/newsapi"
 )
 
-func translater(sr *elastic.SearchResult) []newsapi.Article {
+func Translator(sr *elastic.SearchResult) []newsapi.Article {
 	articles := []newsapi.Article{}
-	sr.Each( )
+	for _, item := range sr.Each(reflect.TypeOf(newsapi.Article{})) {
+		article := item.(newsapi.Article)
+		articles = append(articles, article)
+	}
 	return articles
 }

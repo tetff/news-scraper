@@ -1,11 +1,14 @@
 package api
 
 import (
-	"github.com/tothmate90/news-scraper/newsapi"
-	"github.com/tothmate90/news-scraper/elasticsearch"
+	"encoding/json"
 	"net/http"
 	"time"
-	"context"
+
+	"github.com/olivere/elastic"
+	"github.com/tothmate90/news-scraper/utils"
+
+	"github.com/tothmate90/news-scraper/elasticsearch"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -14,10 +17,10 @@ import (
 
 type Handler struct {
 	Mux *chi.Mux
-	Route *chi.Router
+	EH  *elasticsearch.Handler
 }
 
-func New() Handler {
+func New(port string, eH *elasticsearch.Handler) Handler {
 	mux := chi.NewRouter()
 	mux.Use(middleware.RequestID)
 	mux.Use(middleware.RealIP)
@@ -25,34 +28,48 @@ func New() Handler {
 	mux.Use(middleware.Recoverer)
 	mux.Use(middleware.Timeout(60 * time.Second))
 	mux.Use(render.SetContentType(render.ContentTypeJSON))
+	http.ListenAndServe(":"+port, mux)
 	return Handler{
 		Mux: mux,
+		EH:  eH,
 	}
 }
 
-func ArticleCtx(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var article *newsapi.Article
-		var err error
-		if articleID := chi.URLParam(r, "articleID"); articleID != "" {
-			article, err = (*elasticsearch.Handler).Get(articleID)
-		}
+func (h *Handler) Get(id string) {
+	h.Mux.Get("/news-api/ver1.0/", func(w http.ResponseWriter, r *http.Request) {
+		sR, err := h.EH.Get(id)
 		if err != nil {
+			w.WriteHeader(400)
 			return
 		}
-		ctx := context.WithValue(r.Context(), "article", article)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		articleResponse(sR, w)
 	})
 }
 
-func (h *Handler) Conn() {
-	http.ListenAndServe(":3000", h.Mux)
-}
-
-func (h *Handler) Route() {
-	
-}
-
 func (h *Handler) GetAll(from, size int) {
+	h.Mux.Get("/news-api/ver1.0/", func(w http.ResponseWriter, r *http.Request) {
+		sR, err := h.EH.GetAll(from, size)
+		if err != nil {
+			w.WriteHeader(400)
+			return
+		}
+		articleResponse(sR, w)
+	})
+}
 
+func (h *Handler) Post(country, category string) {
+
+}
+
+func articleResponse(sR *elastic.SearchResult, w http.ResponseWriter) {
+	articles := utils.Translator(sR)
+		message, err := json.Marshal(articles)
+		if err != nil {
+			w.WriteHeader(400)
+			return
+		}
+		_, err = w.Write(message)
+		if err != nil {
+			return
+		}
 }

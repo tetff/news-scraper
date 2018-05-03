@@ -16,7 +16,7 @@ type Article struct {
 	PublishedAt string
 }
 
-func translater(article newsapi.Article) Article {
+func translator(article newsapi.Article) Article {
 	return Article{
 		ID:          xid.New().String(),
 		Source:      article.Source.Name,
