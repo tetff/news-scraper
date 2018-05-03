@@ -17,7 +17,7 @@ import (
 
 type Handler struct {
 	Mux *chi.Mux
-	EH  *elasticsearch.Handler
+	ElasticHandler  *elasticsearch.Handler
 }
 
 func New(port string, eH *elasticsearch.Handler) Handler {
@@ -31,13 +31,14 @@ func New(port string, eH *elasticsearch.Handler) Handler {
 	http.ListenAndServe(":"+port, mux)
 	return Handler{
 		Mux: mux,
-		EH:  eH,
+		ElasticHandler:  eH,
 	}
 }
 
-func (h *Handler) Get(id string) {
-	h.Mux.Get("/news-api/ver1.0/", func(w http.ResponseWriter, r *http.Request) {
-		sR, err := h.EH.Get(id)
+func (h *Handler) Get() {
+	h.Mux.Get("/news-api/ver1/{articleID}", func(w http.ResponseWriter, r *http.Request) {
+		articleID := chi.URLParam(r, "articleID")
+		sR, err := h.ElasticHandler.Get(articleID)
 		if err != nil {
 			w.WriteHeader(400)
 			return
@@ -47,8 +48,8 @@ func (h *Handler) Get(id string) {
 }
 
 func (h *Handler) GetAll(from, size int) {
-	h.Mux.Get("/news-api/ver1.0/", func(w http.ResponseWriter, r *http.Request) {
-		sR, err := h.EH.GetAll(from, size)
+	h.Mux.Get("/news-api/ver1/", func(w http.ResponseWriter, r *http.Request) {
+		sR, err := h.ElasticHandler.GetAll(from, size)
 		if err != nil {
 			w.WriteHeader(400)
 			return
@@ -58,7 +59,9 @@ func (h *Handler) GetAll(from, size int) {
 }
 
 func (h *Handler) Post(country, category string) {
-
+	h.Mux.Post("/news-api/ver1/", func(w http.ResponseWriter, r *http.Request) {
+		
+	})
 }
 
 func articleResponse(sR *elastic.SearchResult, w http.ResponseWriter) {
