@@ -36,7 +36,7 @@ func New(port string, eH *elasticsearch.Handler) Handler {
 }
 
 func (h *Handler) Get() {
-	h.Mux.Get("/news-api/ver1/{articleID}", func(w http.ResponseWriter, r *http.Request) {
+	h.Mux.Get("/news-api/v1/{articleID}", func(w http.ResponseWriter, r *http.Request) {
 		articleID := chi.URLParam(r, "articleID")
 		sR, err := h.ElasticHandler.Get(articleID)
 		if err != nil {
@@ -48,7 +48,7 @@ func (h *Handler) Get() {
 }
 
 func (h *Handler) GetAll(from, size int) {
-	h.Mux.Get("/news-api/ver1/", func(w http.ResponseWriter, r *http.Request) {
+	h.Mux.Get("/news-api/v1/", func(w http.ResponseWriter, r *http.Request) {
 		sR, err := h.ElasticHandler.GetAll(from, size)
 		if err != nil {
 			w.WriteHeader(400)
@@ -59,7 +59,7 @@ func (h *Handler) GetAll(from, size int) {
 }
 
 func (h *Handler) Post(country, category string) {
-	h.Mux.Post("/news-api/ver1/", func(w http.ResponseWriter, r *http.Request) {
+	h.Mux.Post("/news-api/v1/", func(w http.ResponseWriter, r *http.Request) {
 		
 	})
 }
