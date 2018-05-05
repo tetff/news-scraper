@@ -9,27 +9,34 @@ import (
 	"github.com/olivere/elastic"
 )
 
-type Handler struct {
+type Handler interface {
+	Create() error
+	GetAll(from, size int) (*elastic.SearchResult, error)
+	Get(id string) (*elastic.SearchResult, error)
+	Post(articles []newsapi.Article) error
+}
+
+type handler struct {
 	conn   string
-	name string
+	name   string
 	Client *elastic.Client
 }
 
 func New(conn, name string) (Handler, error) {
-	var handler Handler
+	var handler handler
 	var err error
 	handler.conn = conn
 	handler.name = name
 	handler.Client, err = elastic.NewClient()
-	return handler, err
+	return &handler, err
 }
 
-func (h *Handler) Create() error {
+func (h *handler) Create() error {
 	_, err := h.Client.CreateIndex(h.name).Do(context.Background())
 	return err
 }
 
-func (h *Handler) GetAll(from, size int) (*elastic.SearchResult, error) {
+func (h *handler) GetAll(from, size int) (*elastic.SearchResult, error) {
 	termQuery := elastic.NewMatchAllQuery()
 	searchResult, err := h.Client.Search().
 		Index(h.name).
@@ -41,7 +48,7 @@ func (h *Handler) GetAll(from, size int) (*elastic.SearchResult, error) {
 	return searchResult, err
 }
 
-func (h *Handler) Get(id string) (*elastic.SearchResult, error) {
+func (h *handler) Get(id string) (*elastic.SearchResult, error) {
 	termQuery := elastic.NewTermQuery("id", id)
 	searchResult, err := h.Client.Search().
 		Index(h.name).
@@ -51,7 +58,7 @@ func (h *Handler) Get(id string) (*elastic.SearchResult, error) {
 	return searchResult, err
 }
 
-func (h *Handler) Post(articles []newsapi.Article) error {
+func (h *handler) Post(articles []newsapi.Article) error {
 	idIF, err := elastic.NewMaxAggregation().Field("id").Source()
 	if err != nil {
 		return err
@@ -64,7 +71,7 @@ func (h *Handler) Post(articles []newsapi.Article) error {
 		_, err := h.Client.Index().
 			Index(h.name).
 			Type("doc").
-			Id(fmt.Sprintf("%d", id + 1)).
+			Id(fmt.Sprintf("%d", id+1)).
 			BodyJson(article).
 			Refresh("wait_for").
 			Do(context.Background())
