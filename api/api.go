@@ -21,7 +21,6 @@ import (
 type Handler struct {
 	Mux            *chi.Mux
 	ElasticHandler elasticsearch.Handler
-	values         url.Values
 }
 
 func New(port string, eH elasticsearch.Handler) Handler {
@@ -53,12 +52,13 @@ func (h *Handler) Get() {
 
 func (h *Handler) GetAll() {
 	h.Mux.Get("/news-api/v1/", func(w http.ResponseWriter, r *http.Request) {
-		from, err := strconv.Atoi(h.values.Get("from"))
+		values := url.Values{}
+		from, err := strconv.Atoi(values.Get("from"))
 		if err != nil {
 			w.WriteHeader(400)
 			return
 		}
-		size, err := strconv.Atoi(h.values.Get("size"))
+		size, err := strconv.Atoi(values.Get("size"))
 		if err != nil {
 			w.WriteHeader(400)
 			return
@@ -74,9 +74,10 @@ func (h *Handler) GetAll() {
 
 func (h *Handler) Post() {
 	h.Mux.Post("/news-api/v1/", func(w http.ResponseWriter, r *http.Request) {
+		paramValues := url.Values{}
 		values := url.Values{}
-		values.Add("country", h.values.Get("country"))
-		values.Add("category", h.values.Get("category"))
+		values.Add("country", paramValues.Get("country"))
+		values.Add("category", paramValues.Get("category"))
 
 		result, err := newsapi.GetTopHeadlines(values)
 		if err != nil {
