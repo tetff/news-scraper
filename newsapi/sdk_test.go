@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/tothmate90/news-scraper/config"
 )
 
 const testResult = `{
@@ -50,10 +51,14 @@ func TestParse(t *testing.T) {
 }
 
 func TestGetTopHeadlines(t *testing.T) {
+	testConfig, err := config.ReadJson("./../dev-config.json")
+	if err!= nil {
+		t.Error(err)
+	}
 	var values = url.Values{}
 	values.Add("country", "us")
 	values.Add("category", "business")
-	result, err := GetTopHeadlines(values)
+	result, err := GetTopHeadlines(values, testConfig)
 	if err != nil {
 		t.Error(err)
 	}

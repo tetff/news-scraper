@@ -6,9 +6,10 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/tothmate90/news-scraper/config"
 )
 
-const apiKey = "9699ebb3ce234b649aedac95e057bdc4"
 const host = "https://newsapi.org"
 
 // Wrapper ...
@@ -45,9 +46,9 @@ func Parse(data []byte) (Wrapper, error) {
 }
 
 // GetTopHeadlines ...
-func GetTopHeadlines(values url.Values) (Wrapper, error) {
+func GetTopHeadlines(values url.Values, config config.Config) (Wrapper, error) {
 	var wrapper Wrapper
-	values.Add("apiKey", apiKey)
+	values.Add("apiKey", config.APIKey)
 	client := new(http.Client)
 	req, err := http.NewRequest("GET", urlBuilder("/v2/top-headlines"), nil)
 	if err != nil {

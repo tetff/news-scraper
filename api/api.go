@@ -1,12 +1,14 @@
 package api
 
 import (
-	"github.com/tothmate90/news-scraper/newsapi"
 	"encoding/json"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/tothmate90/news-scraper/config"
+	"github.com/tothmate90/news-scraper/newsapi"
 
 	"github.com/olivere/elastic"
 	"github.com/tothmate90/news-scraper/utils"
@@ -21,9 +23,10 @@ import (
 type Handler struct {
 	Mux            *chi.Mux
 	ElasticHandler elasticsearch.Handler
+	Config         config.Config
 }
 
-func New(port string, eH elasticsearch.Handler) Handler {
+func New(port string, eH elasticsearch.Handler, conf config.Config) Handler {
 	mux := chi.NewRouter()
 	mux.Use(middleware.RequestID)
 	mux.Use(middleware.RealIP)
@@ -35,6 +38,7 @@ func New(port string, eH elasticsearch.Handler) Handler {
 	return Handler{
 		Mux:            mux,
 		ElasticHandler: eH,
+		Config:         conf,
 	}
 }
 
@@ -74,12 +78,12 @@ func (h *Handler) GetAll() {
 
 func (h *Handler) Post() {
 	h.Mux.Post("/news-api/v1/", func(w http.ResponseWriter, r *http.Request) {
-		paramValues := url.Values{}
+		queryValues := url.Values{}
 		values := url.Values{}
-		values.Add("country", paramValues.Get("country"))
-		values.Add("category", paramValues.Get("category"))
+		values.Add("country", queryValues.Get("country"))
+		values.Add("category", queryValues.Get("category"))
 
-		result, err := newsapi.GetTopHeadlines(values)
+		result, err := newsapi.GetTopHeadlines(values, h.Config)
 		if err != nil {
 			w.WriteHeader(400)
 			return
@@ -87,7 +91,7 @@ func (h *Handler) Post() {
 		err = h.ElasticHandler.Post(result.Articles)
 		if err != nil {
 			w.WriteHeader(400)
-			return			
+			return
 		}
 		message, err := json.Marshal(result.Articles)
 		if err != nil {
@@ -97,7 +101,7 @@ func (h *Handler) Post() {
 		_, err = w.Write(message)
 		if err != nil {
 			w.WriteHeader(400)
-			return			
+			return
 		}
 	})
 }

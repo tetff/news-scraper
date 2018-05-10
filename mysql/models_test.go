@@ -9,7 +9,7 @@ import (
 	"github.com/tothmate90/news-scraper/newsapi"
 )
 
-func TestTranslater(t *testing.T) {
+func TestTranslator(t *testing.T) {
 	testArticle := newsapi.Article{
 		Source: newsapi.Source{
 			Name: "CNBC",
@@ -21,7 +21,7 @@ func TestTranslater(t *testing.T) {
 		URLToImage:  "Test URLToImage",
 		PublishedAt: time.Now(),
 	}
-	article := translater(testArticle)
+	article := translator(testArticle)
 	assert.Equal(t, testArticle.Source.Name, article.Source)
 	assert.Equal(t, testArticle.URL, article.URL)
 	assert.Equal(t, testArticle.Description, article.Description)

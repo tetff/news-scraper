@@ -1,0 +1,4 @@
+{
+  "apiKey" : "9699ebb3ce234b649aedac95e057bdc4",
+  "connection" : "root:toor@tcp(127.0.0.1:3306)/newsapitest?charset=utf8&parseTime=True&loc=Local"
+}

@@ -1,38 +1,38 @@
 package main
 
 import (
-	"net/url"
-
-	"github.com/tothmate90/news-scraper/elasticsearch"
-	"github.com/tothmate90/news-scraper/mysql"
-	"github.com/tothmate90/news-scraper/newsapi"
+	"github.com/tothmate90/news-scraper/commands"
+	"github.com/urfave/cli"
 )
 
-const conn = "root:toor@tcp(127.0.0.1:3306)/newsapitest?charset=utf8&parseTime=True&loc=Local"
+var (
+	cliApp     *cli.App
+	configFile string
+)
+
+func init() {
+	cliApp = cli.NewApp()
+	cliApp.Name = "news-api-go"
+	cliApp.Usage = "API server storing articles from newsapi.org in Elasticsearch"
+}
 
 func main() {
-	var values = url.Values{}
-	values.Add("country", "us")
-	values.Add("category", "business")
-	result, err := newsapi.GetTopHeadlines(values)
-	if err != nil {
-		panic(err)
-	}
-
-	// MySQL section
-	handler, err := mysql.New(conn)
-	if err != nil {
-		panic(err)
-	}
-	handler.Save(result.Articles)
-
-	// Elastic section
-	esHandler, err := elasticsearch.New("")
-	if err != nil {
-		panic(err)
-	}
-	err = esHandler.Create("articles")
-	if err != nil {
-		panic(err)
+	cliApp.Commands = []cli.Command{
+		{
+			Name:  "run",
+			Usage: "run the actual HTTP server",
+			Action: func(c *cli.Context) error {
+				return commands.RunServer(configFile)
+			},
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:        "config-file",
+					EnvVar:      "NEWSAPI_CONFIG_FILE",
+					Usage:       "Location of the config file",
+					Value:       "./dev-config.json",
+					Destination: &configFile,
+				},
+			},
+		},
 	}
 }
