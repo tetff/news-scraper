@@ -15,11 +15,12 @@ func RunServer(configFile string) error {
 		return err
 	}
 	// Elastic section
-	handler, err := elasticsearch.New(config.Conn, "")
+	elasticHandler, err := elasticsearch.New(config.Conn, "")
 	if err != nil {
 		return err
 	}
 	// Api section
-	api.New("8080", handler, config)
+	apiHandler := api.New(elasticHandler, config)
+	apiHandler.Listen("8080")
 	return err
 }

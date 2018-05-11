@@ -26,7 +26,7 @@ type Handler struct {
 	Config         config.Config
 }
 
-func New(port string, eH elasticsearch.Handler, conf config.Config) Handler {
+func New(eH elasticsearch.Handler, conf config.Config) Handler {
 	mux := chi.NewRouter()
 	mux.Use(middleware.RequestID)
 	mux.Use(middleware.RealIP)
@@ -34,12 +34,15 @@ func New(port string, eH elasticsearch.Handler, conf config.Config) Handler {
 	mux.Use(middleware.Recoverer)
 	mux.Use(middleware.Timeout(60 * time.Second))
 	mux.Use(render.SetContentType(render.ContentTypeJSON))
-	http.ListenAndServe(":"+port, mux)
 	return Handler{
 		Mux:            mux,
 		ElasticHandler: eH,
 		Config:         conf,
 	}
+}
+
+func (h *Handler) Listen(port string) {
+	http.ListenAndServe(":"+port, h.Mux)
 }
 
 func (h *Handler) Get() {
