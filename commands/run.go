@@ -6,7 +6,7 @@ import (
 	"github.com/tothmate90/news-scraper/elasticsearch"
 	"github.com/tothmate90/news-scraper/mysql"
 )
-
+// RunServer The main function setting up the server.
 func RunServer(configFile string) error {
 	config, err := config.ReadJSON(configFile)
 	// MySQL section
@@ -21,6 +21,6 @@ func RunServer(configFile string) error {
 	}
 	// Api section
 	apiHandler := api.New(elasticHandler, config)
-	apiHandler.Listen("8080")
+	apiHandler.Listen()
 	return err
 }

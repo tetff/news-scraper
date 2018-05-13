@@ -19,13 +19,13 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/render"
 )
-
+// Handler API handler containing the mux from chi's library, the handler managing elasticsearch and the config library.
 type Handler struct {
 	Mux            *chi.Mux
 	ElasticHandler elasticsearch.Handler
 	Config         config.Config
 }
-
+// New Responsible for setting up the API.
 func New(eH elasticsearch.Handler, conf config.Config) Handler {
 	mux := chi.NewRouter()
 	mux.Use(middleware.RequestID)
@@ -40,11 +40,11 @@ func New(eH elasticsearch.Handler, conf config.Config) Handler {
 		Config:         conf,
 	}
 }
-
+// Listen Opening the port read from the config file.
 func (h *Handler) Listen() {
 	http.ListenAndServe(":"+h.Config.Port, h.Mux)
 }
-
+// Get API get method that requires the ID as a param of the article in ES.
 func (h *Handler) Get() {
 	h.Mux.Get("/news-api/v1/{articleID}", func(w http.ResponseWriter, r *http.Request) {
 		articleID := chi.URLParam(r, "articleID")
@@ -56,7 +56,7 @@ func (h *Handler) Get() {
 		articleResponse(sR, w)
 	})
 }
-
+// GetAll API get method that returns all articles in a range. The from and size of the result is required as a query.
 func (h *Handler) GetAll() {
 	h.Mux.Get("/news-api/v1/", func(w http.ResponseWriter, r *http.Request) {
 		values := url.Values{}
@@ -78,7 +78,7 @@ func (h *Handler) GetAll() {
 		articleResponse(sR, w)
 	})
 }
-
+// Post API post method that will insert the result from the newsapi.org into ES. Country and category are required as a query.
 func (h *Handler) Post() {
 	h.Mux.Post("/news-api/v1/", func(w http.ResponseWriter, r *http.Request) {
 		queryValues := url.Values{}
