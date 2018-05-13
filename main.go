@@ -1,6 +1,9 @@
 package main
 
 import (
+	"log"
+	"os"
+
 	"github.com/tothmate90/news-scraper/commands"
 	"github.com/urfave/cli"
 )
@@ -34,5 +37,8 @@ func main() {
 				},
 			},
 		},
+	}
+	if err := cliApp.Run(os.Args); err != nil {
+		log.Print(err)
 	}
 }

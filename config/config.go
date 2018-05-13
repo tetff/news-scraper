@@ -9,9 +9,10 @@ import (
 type Config struct {
 	APIKey string `json:"apiKey"`
 	Conn   string `json:"connection"`
+	Port   string `json:"port"`
 }
 
-func ReadJson(configFile string) (Config, error) {
+func ReadJSON(configFile string) (Config, error) {
 	var config Config
 	jsonFile, err := os.Open(configFile)
 	if err != nil {

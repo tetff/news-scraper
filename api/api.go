@@ -41,8 +41,8 @@ func New(eH elasticsearch.Handler, conf config.Config) Handler {
 	}
 }
 
-func (h *Handler) Listen(port string) {
-	http.ListenAndServe(":"+port, h.Mux)
+func (h *Handler) Listen() {
+	http.ListenAndServe(":"+h.Config.Port, h.Mux)
 }
 
 func (h *Handler) Get() {

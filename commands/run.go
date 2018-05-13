@@ -8,7 +8,7 @@ import (
 )
 
 func RunServer(configFile string) error {
-	config, err := config.ReadJson(configFile)
+	config, err := config.ReadJSON(configFile)
 	// MySQL section
 	_, err = mysql.New(config.Conn)
 	if err != nil {
