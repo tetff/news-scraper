@@ -42,7 +42,7 @@ func New(eH elasticsearch.Handler, conf config.Config) Handler {
 }
 // Listen Opening the port read from the config file.
 func (h *Handler) Listen() {
-	http.ListenAndServe(":"+h.Config.Port, h.Mux)
+	http.ListenAndServe(h.Config.Host, h.Mux)
 }
 // Get API get method that requires the ID as a param of the article in ES.
 func (h *Handler) Get() {

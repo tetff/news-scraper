@@ -9,7 +9,7 @@ import (
 type Config struct {
 	APIKey string `json:"apiKey"`
 	Conn   string `json:"connection"`
-	Port   string `json:"port"`
+	Host   string `json:"host"`
 }
 // ReadJSON Reads the config file from an outer json.
 func ReadJSON(configFile string) (Config, error) {

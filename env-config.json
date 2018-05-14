@@ -1,5 +1,5 @@
 {
   "apiKey": "Get your own api key from https://newsapi.org",
   "connection": "Enter your the MySQL connection",
-  "port": "Enter the port you want to run your API on"
+  "host": "Enter the host address you want to run your API on"
 }
