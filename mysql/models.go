@@ -4,6 +4,7 @@ import (
 	"github.com/rs/xid"
 	"github.com/tothmate90/news-scraper/newsapi"
 )
+
 // Article Required for the conversion to MySQL compatible datastructure.
 type Article struct {
 	ID          string

@@ -51,7 +51,7 @@ func TestParse(t *testing.T) {
 }
 
 func TestGetTopHeadlines(t *testing.T) {
-	testConfig, err := config.ReadJson("./../dev-config.json")
+	testConfig, err := config.ReadJSON("./../dev-config.json")
 	if err!= nil {
 		t.Error(err)
 	}
