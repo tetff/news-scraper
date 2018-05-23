@@ -13,6 +13,9 @@ import (
 var (
 	cliApp     *cli.App
 	configFile string
+	fileName   string
+	category   string
+	country    string
 )
 
 func init() {
@@ -30,6 +33,40 @@ func main() {
 				return commands.RunServer(configFile)
 			},
 			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:        "config-file",
+					EnvVar:      "NEWSAPI_CONFIG_FILE",
+					Usage:       "Location of the config file",
+					Value:       "./dev-config.json",
+					Destination: &configFile,
+				},
+			},
+		},
+		{
+			Name:  "save",
+			Usage: "save the results from newsapi.org to a file",
+			Action: func(c *cli.Context) error {
+				return commands.Save(fileName, category, country, configFile)
+			},
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:        "file-name",
+					Usage:       "Name of the destination file (without extension).",
+					Value:       "",
+					Destination: &fileName,
+				},
+				cli.StringFlag{
+					Name:        "category",
+					Usage:       "The category you want to look up.",
+					Value:       "",
+					Destination: &category,
+				},
+				cli.StringFlag{
+					Name:        "country",
+					Usage:       "The country you want to look headlines in.",
+					Value:       "",
+					Destination: &country,
+				},
 				cli.StringFlag{
 					Name:        "config-file",
 					EnvVar:      "NEWSAPI_CONFIG_FILE",
